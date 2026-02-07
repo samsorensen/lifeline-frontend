@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Warm cream palette */
+  --bg: #FDF8F3;
+  --bg-warm: #FAF3EB;
+  --surface: #FFFFFF;
+  --surface-warm: #FFF9F3;
+  --border: #EDE5DA;
+  --border-light: #F3EDE5;
+
+  /* Text — warm browns */
+  --text: #2C2418;
+  --text-secondary: #7A6E5D;
+  --text-tertiary: #B5A898;
+
+  /* Accent — warm amber/orange */
+  --accent: #C8713A;
+  --accent-light: #FFF0E4;
+  --accent-hover: #B5622F;
+  --accent-dark: #3D2E1C;
+
+  /* Status — muted warm versions */
+  --green: #5E8C61;
+  --green-light: #F2F7F0;
+  --orange: #C8713A;
+  --orange-light: #FFF5ED;
+  --red: #C0513F;
+  --red-light: #FDF0ED;
+
+  /* Shadows — warm tinted */
+  --shadow-sm: 0 1px 3px rgba(44,36,24,0.04);
+  --shadow-md: 0 4px 12px rgba(44,36,24,0.06);
+  --shadow-lg: 0 8px 28px rgba(44,36,24,0.08);
+
+  /* Radii — rounder, pill-like */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 100px;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
+}
+
+h1, h2, h3 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-weight: 400;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  outline: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+::selection {
+  background: #F0DCC8;
+  color: #2C2418;
+}
