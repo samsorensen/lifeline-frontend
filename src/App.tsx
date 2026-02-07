@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Welcome from './pages/Welcome';
 import Onboarding from './pages/Onboarding';
 import CourseList from './pages/CourseList';
 import CourseBreakdown from './pages/CourseBreakdown';
@@ -12,7 +13,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Onboarding />} />
+        <Route path="/" element={<Welcome />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/courses" element={<CourseList />} />
         <Route path="/course/:courseId" element={<CourseBreakdown />} />
         <Route path="/study/:taskId" element={<Study />} />

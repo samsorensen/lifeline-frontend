@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, TrendingUp, Sparkles, Zap, ChevronDown } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap, ChevronDown, Check } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { courses, tasksByCourse } from '../data/mock';
+
+const COURSE_GOAL = 5;
 
 const dailySummary =
   "Focus on your BST implementation for CS 201 first — it's due today. After that, knock out the Linear Algebra problem set (Wednesday). Leave the lighter readings and discussion posts for the evening. Your quiz prep for Friday can wait until Thursday.";
@@ -94,7 +96,9 @@ export default function CourseList() {
         <div style={styles.grid}>
           {courses.map((course) => {
             const tasks = tasksByCourse[course.id] || [];
+            const completed = tasks.filter((t) => t.completed).length;
             const pending = tasks.filter((t) => !t.completed).length;
+            const progress = tasks.length > 0 ? (completed / tasks.length) * 100 : 0;
             return (
               <button
                 key={course.id}
@@ -111,16 +115,26 @@ export default function CourseList() {
                   <p style={styles.professor}>{course.professor}</p>
                 </div>
                 <div style={styles.cardFooter}>
-                  <div style={styles.progressRow}>
-                    <TrendingUp size={13} color="#7A6E5D" />
-                    <div style={styles.progressTrack}>
+                  <div style={styles.cardPipeline}>
+                    <div style={styles.cardPipelineLine}>
                       <div style={{
-                        ...styles.progressFill,
-                        width: `${course.progress}%`,
+                        ...styles.cardPipelineLineFill,
+                        width: `${(completed / Math.min(COURSE_GOAL, tasks.length)) * 100}%`,
                         background: course.color,
                       }} />
                     </div>
-                    <span style={styles.progressText}>{course.progress}%</span>
+                    {Array.from({ length: Math.min(COURSE_GOAL, tasks.length) }).map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          ...styles.cardPipelineDot,
+                          background: i < completed ? course.color : '#FFFFFF',
+                          borderColor: i < completed ? course.color : '#DDD3C6',
+                        }}
+                      >
+                        {i < completed && <Check size={9} color="#FFF" strokeWidth={3} />}
+                      </div>
+                    ))}
                   </div>
                   <span style={styles.taskCount}>
                     {pending} task{pending !== 1 ? 's' : ''} pending
@@ -449,6 +463,41 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     gap: 6,
     paddingTop: 4,
+  },
+  cardPipeline: {
+    position: 'relative' as const,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 20,
+  },
+  cardPipelineLine: {
+    position: 'absolute' as const,
+    left: 10,
+    right: 10,
+    top: '50%',
+    height: 2,
+    background: '#EDE5DA',
+    transform: 'translateY(-50%)',
+    borderRadius: 1,
+    overflow: 'hidden',
+  },
+  cardPipelineLineFill: {
+    height: '100%',
+    borderRadius: 1,
+    transition: 'width 0.4s ease',
+  },
+  cardPipelineDot: {
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    border: '2px solid',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease',
+    position: 'relative' as const,
+    zIndex: 1,
   },
   progressRow: {
     display: 'flex',

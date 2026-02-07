@@ -99,9 +99,7 @@ export default function CourseBreakdown() {
               <div style={styles.pipelineLine}>
                 <div style={{
                   ...styles.pipelineLineFill,
-                  width: DAILY_GOAL <= 1
-                    ? (tasks.filter(t => t.completed).length >= 1 ? '100%' : '0%')
-                    : `${(Math.max(0, tasks.filter(t => t.completed).length - 1) / (DAILY_GOAL - 1)) * 100}%`,
+                  width: `${(tasks.filter(t => t.completed).length / Math.min(DAILY_GOAL, tasks.length)) * 100}%`,
                 }} />
               </div>
               {Array.from({ length: Math.min(DAILY_GOAL, tasks.length) }).map((_, i) => (
@@ -203,60 +201,6 @@ export default function CourseBreakdown() {
                         <BookOpen size={13} />
                         Study
                       </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Modules */}
-          <div style={styles.column}>
-            <h3 style={styles.sectionTitle}>Study Modules</h3>
-            <div style={styles.moduleList}>
-              {modules.map((mod) => {
-                const expanded = expandedModules[mod.id] ?? false;
-                return (
-                  <div key={mod.id} style={styles.moduleCard}>
-                    <button
-                      onClick={() => toggleModule(mod.id)}
-                      style={styles.moduleHeader}
-                    >
-                      {expanded
-                        ? <ChevronDown size={15} color="#7A6E5D" />
-                        : <ChevronRight size={15} color="#7A6E5D" />}
-                      <span style={styles.moduleTitle}>{mod.title}</span>
-                    </button>
-                    {expanded && (
-                      <div style={styles.moduleItems}>
-                        {mod.items.map((item) => {
-                          const done = item.completed || completedItems[item.id];
-                          const Icon = getTypeIcon(item.type);
-                          return (
-                            <div key={item.id} style={styles.moduleItem}>
-                              <button onClick={() => toggleItem(item.id)} style={styles.checkBtn}>
-                                {done
-                                  ? <CheckCircle2 size={16} color="#5E8C61" />
-                                  : <Circle size={16} color="#D6CCBF" />}
-                              </button>
-                              <Icon size={14} color="#B5A898" />
-                              <span style={{
-                                ...styles.moduleItemText,
-                                textDecoration: done ? 'line-through' : 'none',
-                                color: done ? '#B5A898' : '#2C2418',
-                              }}>
-                                {item.title}
-                              </span>
-                              {item.dueDate && (
-                                <span style={styles.moduleItemDue}>{item.dueDate}</span>
-                              )}
-                              {item.points !== undefined && (
-                                <span style={styles.moduleItemPts}>{item.points} pts</span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
                     )}
                   </div>
                 );
@@ -424,7 +368,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   columns: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: '1fr',
     gap: 28,
     alignItems: 'start',
   },
@@ -441,8 +385,8 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 2,
   },
   taskList: {
-    display: 'flex',
-    flexDirection: 'column',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
     gap: 10,
   },
   taskCard: {
