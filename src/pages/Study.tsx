@@ -10,22 +10,47 @@ export default function Study() {
   const [flipped, setFlipped] = useState(false);
   const [mastered, setMastered] = useState<Set<string>>(new Set());
 
-  const cards = flashcardSets[taskId || ''] || [];
-
   const allTasks = Object.values(tasksByCourse).flat();
   const task = allTasks.find((t) => t.id === taskId);
 
-  if (cards.length === 0) {
+  if (!task) {
     return (
       <div style={styles.container}>
         <div style={styles.emptyState}>
           <BookOpen size={32} color="#B5A898" />
-          <p>No study materials available.</p>
+          <p>Task not found.</p>
           <button onClick={() => navigate(-1)} style={styles.backLink}>Go back</button>
         </div>
       </div>
     );
   }
+
+  const baseCards = flashcardSets[taskId || ''] || [];
+  const isMock = baseCards.length === 0;
+  const cards = isMock
+    ? [
+        {
+          id: 'mock-1',
+          front: `What is the primary goal of ${task.title}?`,
+          back: 'Describe the core objective in one clear sentence.',
+        },
+        {
+          id: 'mock-2',
+          front: 'Which concept from the course connects most to this task?',
+          back: 'Identify the key topic and how it applies to the deliverable.',
+        },
+        {
+          id: 'mock-3',
+          front: 'What is a common mistake to avoid here?',
+          back: 'Name one pitfall and how you will prevent it.',
+        },
+        {
+          id: 'mock-4',
+          front: 'How will you validate your final output?',
+          back: 'List one check to confirm the work meets requirements.',
+        },
+      ]
+    : baseCards;
 
   const card = cards[currentIndex];
   const masteredCount = mastered.size;
@@ -65,6 +90,7 @@ export default function Study() {
           <div style={styles.headerCenter}>
             <h2 style={styles.title}>{task?.title || 'Study Session'}</h2>
             <span style={styles.subtitle}>{task?.courseCode}</span>
+            {isMock && <span style={styles.previewTag}>Preview Deck</span>}
           </div>
           <div style={{ width: 80 }} />
         </div>
@@ -194,6 +220,18 @@ const styles: Record<string, React.CSSProperties> = {
   subtitle: {
     fontSize: 13,
     color: '#B5A898',
+  },
+  previewTag: {
+    alignSelf: 'center',
+    background: '#FFF5ED',
+    border: '1px solid #FFE4CC',
+    borderRadius: 999,
+    color: '#C8713A',
+    fontSize: 11,
+    fontWeight: 600,
+    padding: '4px 10px',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.06em',
   },
   progressSection: {
     display: 'flex',

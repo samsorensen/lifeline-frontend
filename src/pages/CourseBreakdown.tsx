@@ -11,6 +11,7 @@ import {
   HelpCircle,
   MessageSquare,
   GraduationCap,
+  Check,
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import {
@@ -22,6 +23,8 @@ import {
   type Task,
   type ModuleItem,
 } from '../data/mock';
+
+const DAILY_GOAL = 5;
 
 function getTypeIcon(type: ModuleItem['type']) {
   switch (type) {
@@ -72,13 +75,53 @@ export default function CourseBreakdown() {
     <div style={styles.layout}>
       <Sidebar />
       <main style={styles.main}>
-        {/* Course Header */}
-        <div style={styles.courseHeader}>
-          <div style={{ ...styles.colorBar, background: course.color }} />
-          <div style={styles.headerContent}>
-            <span style={styles.courseCode}>{course.code}</span>
-            <h1 style={styles.courseTitle}>{course.name}</h1>
-            <p style={styles.courseMeta}>{course.professor} · {course.schedule}</p>
+        {/* Course Header with Progress */}
+        <div style={styles.courseHeaderContainer}>
+          <div>
+            <div style={styles.courseHeader}>
+              <div style={{ ...styles.colorBar, background: course.color }} />
+              <div style={styles.headerContent}>
+                <span style={styles.courseCode}>{course.code}</span>
+                <h1 style={styles.courseTitle}>{course.name}</h1>
+                <p style={styles.courseMeta}>{course.professor} · {course.schedule}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress tracker */}
+          <div style={styles.dailyCard}>
+            <div style={styles.dailyRow}>
+              <span style={styles.dailyLabel}>Progress</span>
+              <span style={styles.dailyCount}>{tasks.filter(t => t.completed).length}/{tasks.length}</span>
+            </div>
+            {/* Pipeline: line through circles */}
+            <div style={styles.pipeline}>
+              <div style={styles.pipelineLine}>
+                <div style={{
+                  ...styles.pipelineLineFill,
+                  width: DAILY_GOAL <= 1
+                    ? (tasks.filter(t => t.completed).length >= 1 ? '100%' : '0%')
+                    : `${(Math.max(0, tasks.filter(t => t.completed).length - 1) / (DAILY_GOAL - 1)) * 100}%`,
+                }} />
+              </div>
+              {Array.from({ length: Math.min(DAILY_GOAL, tasks.length) }).map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    ...styles.dot,
+                    background: i < tasks.filter(t => t.completed).length ? '#C8713A' : '#FFFFFF',
+                    borderColor: i < tasks.filter(t => t.completed).length ? '#C8713A' : '#DDD3C6',
+                  }}
+                >
+                  {i < tasks.filter(t => t.completed).length && <Check size={9} color="#FFF" strokeWidth={3} />}
+                </div>
+              ))}
+            </div>
+            <div style={styles.dailyBottom}>
+              <span style={styles.dailyHint}>
+                {tasks.filter(t => !t.completed).length} tasks pending
+              </span>
+            </div>
           </div>
         </div>
 
@@ -106,10 +149,27 @@ export default function CourseBreakdown() {
                     style={{
                       ...styles.taskCard,
                       opacity: done ? 0.45 : 1,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onClick={() => navigate(`/task/${task.id}`)}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.background = '#FFFBF7';
+                      e.currentTarget.style.borderColor = '#DDD3C6';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = '#FFFFFF';
+                      e.currentTarget.style.borderColor = '#EDE5DA';
                     }}
                   >
                     <div style={styles.taskTop}>
-                      <button onClick={() => toggleItem(task.id)} style={styles.checkBtn}>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleItem(task.id);
+                        }} 
+                        style={styles.checkBtn}
+                      >
                         {done
                           ? <CheckCircle2 size={20} color="#5E8C61" />
                           : <Circle size={20} color="#D6CCBF" />}
@@ -134,7 +194,10 @@ export default function CourseBreakdown() {
                     <p style={styles.taskDesc}>{task.description}</p>
                     {canStudy(task) && !done && (
                       <button
-                        onClick={() => navigate(`/study/${task.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/study/${task.id}`);
+                        }}
                         style={styles.studyBtn}
                       >
                         <BookOpen size={13} />
@@ -149,7 +212,7 @@ export default function CourseBreakdown() {
 
           {/* Modules */}
           <div style={styles.column}>
-            <h3 style={styles.sectionTitle}>Modules</h3>
+            <h3 style={styles.sectionTitle}>Study Modules</h3>
             <div style={styles.moduleList}>
               {modules.map((mod) => {
                 const expanded = expandedModules[mod.id] ?? false;
@@ -224,6 +287,13 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 16,
     marginBottom: 28,
   },
+  courseHeaderContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 24,
+    marginBottom: 24,
+  },
   colorBar: {
     width: 4,
     borderRadius: 2,
@@ -251,6 +321,80 @@ const styles: Record<string, React.CSSProperties> = {
   courseMeta: {
     fontSize: 14,
     color: '#7A6E5D',
+  },
+  dailyCard: {
+    background: '#FFFFFF',
+    border: '1px solid #EDE5DA',
+    borderRadius: 16,
+    padding: '12px 18px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    minWidth: 220,
+    flexShrink: 0,
+  },
+  dailyRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dailyLabel: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: '#B5A898',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.08em',
+  },
+  dailyCount: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#2C2418',
+  },
+  pipeline: {
+    position: 'relative' as const,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 20,
+  },
+  pipelineLine: {
+    position: 'absolute' as const,
+    left: 10,
+    right: 10,
+    top: '50%',
+    height: 2,
+    background: '#EDE5DA',
+    transform: 'translateY(-50%)',
+    borderRadius: 1,
+    overflow: 'hidden',
+  },
+  pipelineLineFill: {
+    height: '100%',
+    background: '#C8713A',
+    borderRadius: 1,
+    transition: 'width 0.4s ease',
+  },
+  dot: {
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    border: '2px solid',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease',
+    position: 'relative' as const,
+    zIndex: 1,
+  },
+  dailyBottom: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dailyHint: {
+    fontSize: 11,
+    color: '#B5A898',
+    fontWeight: 500,
   },
   summaryCard: {
     background: '#FFFCF8',

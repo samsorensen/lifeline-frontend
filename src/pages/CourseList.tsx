@@ -1,96 +1,93 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Clock, TrendingUp, Check, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, TrendingUp, Sparkles, Zap, ChevronDown } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { courses, tasksByCourse } from '../data/mock';
-
-const DAILY_GOAL = 5;
 
 const dailySummary =
   "Focus on your BST implementation for CS 201 first — it's due today. After that, knock out the Linear Algebra problem set (Wednesday). Leave the lighter readings and discussion posts for the evening. Your quiz prep for Friday can wait until Thursday.";
 
-const dailyLoadEstimate = '~3.5 hrs';
-
 export default function CourseList() {
   const navigate = useNavigate();
-  const [completed] = useState(2);
+  const [dueSoonOpen, setDueSoonOpen] = useState(true);
 
   const allTasks = Object.values(tasksByCourse).flat();
   const pendingCount = allTasks.filter((t) => !t.completed).length;
-  const dueToday = allTasks.filter((t) => t.dueDate === 'Today' && !t.completed);
+  
+  // Calculate overall completion
+  const completedTasks = allTasks.filter((t) => t.completed).length;
+  const completionPercentage = allTasks.length > 0 
+    ? Math.round((completedTasks / allTasks.length) * 100)
+    : 0;
 
   return (
     <div style={styles.layout}>
       <Sidebar />
       <main style={styles.main}>
-        {/* Header row */}
-        <div style={styles.header}>
-          <div>
-            <h1 style={styles.greeting}>Good morning</h1>
-            <p style={styles.subtitle}>
-              You have <strong>{pendingCount} tasks</strong> pending across {courses.length} courses
+        {/* Title */}
+        <h1 style={styles.greeting}>Good morning</h1>
+
+        {/* Body row: AI Summary on left, pie chart on right */}
+        <div style={styles.contentRow}>
+          {/* AI Daily Summary */}
+          <div style={styles.summaryCard}>
+            <div style={styles.summaryRow}>
+              <Sparkles size={14} color="#C8713A" />
+              <span style={styles.summaryLabel}>Your Day at a Glance</span>
+            </div>
+            <p style={styles.summaryText}>{dailySummary}</p>
+            <p style={styles.summaryText}>
+              <strong>You have {pendingCount} tasks pending across {courses.length} courses.</strong>
             </p>
           </div>
 
-          {/* Daily progress tracker */}
+          {/* Completion pie chart */}
           <div style={styles.dailyCard}>
             <div style={styles.dailyRow}>
-              <span style={styles.dailyLabel}>Today</span>
-              <span style={styles.dailyCount}>{completed}/{DAILY_GOAL}</span>
+              <span style={styles.dailyLabel}>Overall</span>
+              <span style={styles.dailyCount}>{completionPercentage}%</span>
             </div>
-            {/* Pipeline: line through circles */}
-            <div style={styles.pipeline}>
-              <div style={styles.pipelineLine}>
-                <div style={{
-                  ...styles.pipelineLineFill,
-                  width: DAILY_GOAL <= 1
-                    ? (completed >= 1 ? '100%' : '0%')
-                    : `${(Math.max(0, completed - 1) / (DAILY_GOAL - 1)) * 100}%`,
-                }} />
-              </div>
-              {Array.from({ length: DAILY_GOAL }).map((_, i) => (
-                <div
-                  key={i}
+            <div style={styles.pieChartContainer}>
+              <svg width={120} height={120} style={styles.pieChart}>
+                <circle
+                  cx={60}
+                  cy={60}
+                  r={50}
+                  fill="none"
+                  stroke="#EDE5DA"
+                  strokeWidth={8}
+                />
+                <circle
+                  cx={60}
+                  cy={60}
+                  r={50}
+                  fill="none"
+                  stroke="#C8713A"
+                  strokeWidth={8}
+                  strokeDasharray={`${(completionPercentage / 100) * 314.159} 314.159`}
+                  strokeLinecap="round"
                   style={{
-                    ...styles.dot,
-                    background: i < completed ? '#C8713A' : '#FFFFFF',
-                    borderColor: i < completed ? '#C8713A' : '#DDD3C6',
+                    transform: 'rotate(-90deg)',
+                    transformOrigin: '60px 60px',
+                    transition: 'stroke-dasharray 0.4s ease',
                   }}
-                >
-                  {i < completed && <Check size={9} color="#FFF" strokeWidth={3} />}
-                </div>
-              ))}
+                />
+              </svg>
+              <div style={styles.pieChartCenter}>
+                <span style={styles.pieChartText}>{completedTasks}/{allTasks.length}</span>
+              </div>
             </div>
             <div style={styles.dailyBottom}>
               <div style={styles.loadChip}>
                 <Zap size={11} color="#C8713A" />
-                <span style={styles.loadText}>{dailyLoadEstimate}</span>
+                <span style={styles.loadText}>Great progress!</span>
               </div>
               <span style={styles.dailyHint}>
-                {completed >= DAILY_GOAL ? 'Done!' : `${DAILY_GOAL - completed} left`}
+                {allTasks.length - completedTasks} tasks left
               </span>
             </div>
           </div>
         </div>
-
-        {/* AI Daily Summary */}
-        <div style={styles.summaryCard}>
-          <div style={styles.summaryRow}>
-            <Sparkles size={14} color="#C8713A" />
-            <span style={styles.summaryLabel}>Your Day at a Glance</span>
-          </div>
-          <p style={styles.summaryText}>{dailySummary}</p>
-        </div>
-
-        {/* Quick stats */}
-        {dueToday.length > 0 && (
-          <div style={styles.alertBar}>
-            <Clock size={15} color="#C8713A" />
-            <span style={styles.alertText}>
-              <strong>{dueToday.length} task{dueToday.length > 1 ? 's' : ''}</strong> due today
-            </span>
-          </div>
-        )}
 
         {/* Courses */}
         <div style={styles.sectionLabel}>Your Courses</div>
@@ -135,8 +132,22 @@ export default function CourseList() {
         </div>
 
         {/* Upcoming */}
-        <div style={styles.sectionLabel}>Due Soon</div>
-        <div style={styles.taskList}>
+        <button
+          onClick={() => setDueSoonOpen(!dueSoonOpen)}
+          style={styles.dropdownHeader}
+        >
+          <span style={styles.sectionLabel}>Due Soon</span>
+          <ChevronDown
+            size={18}
+            color="#7A6E5D"
+            style={{
+              transform: dueSoonOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+              transition: 'transform 0.3s ease',
+            }}
+          />
+        </button>
+        {dueSoonOpen && (
+          <div style={styles.taskList}>
           {allTasks
             .filter((t) => !t.completed)
             .slice(0, 5)
@@ -159,7 +170,8 @@ export default function CourseList() {
                 </span>
               </div>
             ))}
-        </div>
+          </div>
+        )}
       </main>
     </div>
   );
@@ -177,20 +189,27 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '36px 44px',
     maxWidth: 980,
   },
+  greeting: {
+    fontFamily: "'DM Serif Display', Georgia, serif",
+    fontSize: 32,
+    fontWeight: 400,
+    color: '#2C2418',
+    marginBottom: 24,
+    letterSpacing: '-0.01em',
+  },
+  contentRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 24,
+    marginBottom: 30,
+  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: 24,
     marginBottom: 24,
-  },
-  greeting: {
-    fontFamily: "'DM Serif Display', Georgia, serif",
-    fontSize: 32,
-    fontWeight: 400,
-    color: '#2C2418',
-    marginBottom: 6,
-    letterSpacing: '-0.01em',
   },
   subtitle: {
     fontSize: 15,
@@ -286,17 +305,37 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#B5A898',
     fontWeight: 500,
   },
+  pieChartContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative' as const,
+    height: 120,
+  },
+  pieChart: {
+    position: 'absolute' as const,
+  },
+  pieChartCenter: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pieChartText: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#7A6E5D',
+  },
 
   /* ── AI Summary ── */
   summaryCard: {
+    flex: 1,
     background: '#FFFCF8',
     border: '1px solid #EDE5DA',
     borderRadius: 16,
-    padding: '16px 20px',
-    marginBottom: 24,
+    padding: '20px',
     display: 'flex',
     flexDirection: 'column',
-    gap: 8,
+    gap: 10,
   },
   summaryRow: {
     display: 'flex',
@@ -310,7 +349,7 @@ const styles: Record<string, React.CSSProperties> = {
     letterSpacing: '0.01em',
   },
   summaryText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#5C4F3C',
     lineHeight: 1.6,
   },
@@ -338,6 +377,17 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#B5A898',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.08em',
+    marginBottom: 16,
+  },
+  dropdownHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    width: '100%',
     marginBottom: 16,
   },
 
