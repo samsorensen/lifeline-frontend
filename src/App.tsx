@@ -1,35 +1,27 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Onboarding from './pages/Onboarding';
+import CourseList from './pages/CourseList';
+import CourseBreakdown from './pages/CourseBreakdown';
+import Study from './pages/Study';
+import TaskDetail from './pages/TaskDetail';
+import StudyGuide from './pages/StudyGuide';
+import Quiz from './pages/Quiz';
+import LearningGame from './pages/LearningGame';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Onboarding />} />
+        <Route path="/courses" element={<CourseList />} />
+        <Route path="/course/:courseId" element={<CourseBreakdown />} />
+        <Route path="/study/:taskId" element={<Study />} />
+        <Route path="/task/:taskId" element={<TaskDetail />} />
+        <Route path="/study-guide/:taskId" element={<StudyGuide />} />
+        <Route path="/quiz/:taskId" element={<Quiz />} />
+        <Route path="/learning-game/:taskId" element={<LearningGame />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App
